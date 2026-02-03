@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCPP Digital Assistant - Login</title>
+    <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #00AED5 0%, #0088A8 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo {
+            height: 60px;
+            width: auto;
+            margin-bottom: 20px;
+        }
+        
+        .login-header h1 {
+            font-size: 24px;
+            color: #00AED5;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .login-header p {
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #00AED5;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00AED5 0%, #0088A8 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .error-msg {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-msg {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="https://sbf-lex-web-ui-112273805787.s3.ap-southeast-2.amazonaws.com/Logo-SBF.svg" 
+                 alt="SBF Logo" 
+                 class="login-logo"
+                 onerror="this.style.display='none'">
+            <h1>MCPP Digital Assistant</h1>
+            <p>Sign in to continue</p>
+        </div>
+        
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+        </form>
+        
+        <div id="newPasswordForm" style="display:none;">
+            <h3 style="margin: 20px 0 10px 0;">Set New Password</h3>
+            <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" required>
+                <small>Min 8 chars, uppercase, lowercase, number</small>
+            </div>
+            <button type="button" class="btn-login" onclick="setNewPassword()">Set Password</button>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            userPoolId: 'ap-southeast-2_6C9UmSBnz',
+            clientId: 'acjtn7ec52hglsmefqu3ogvv7',
+            region: 'ap-southeast-2'
+        };
+
+        const poolData = {
+            UserPoolId: CONFIG.userPoolId,
+            ClientId: CONFIG.clientId
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        let cognitoUser = null;
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            login();
+        });
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+
+        function showSuccess(msg) {
+            const successDiv = document.getElementById('successMsg');
+            successDiv.textContent = msg;
+            successDiv.style.display = 'block';
+        }
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const authenticationData = {
+                Username: email,
+                Password: password
+            };
+            
+            const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+            
+            const userData = {
+                Username: email,
+                Pool: userPool
+            };
+            
+            cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = 'Signing in...';
+            
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: function(session) {
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                },
+                
+                onFailure: function(err) {
+                    showError(err.message || 'Login failed');
+                    document.getElementById('loginBtn').disabled = false;
+                    document.getElementById('loginBtn').textContent = 'Sign In';
+                },
+                
+                newPasswordRequired: function(userAttributes, requiredAttributes) {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('newPasswordForm').style.display = 'block';
+                    showSuccess('Please set a new password');
+                }
+            });
+        }
+
+        function setNewPassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            
+            if (newPassword.length < 8) {
+                showError('Password must be at least 8 characters');
+                return;
+            }
+            
+            cognitoUser.completeNewPasswordChallenge(newPassword, {}, {
+                onSuccess: function(session) {
+                    showSuccess('Password set! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                },
+                onFailure: function(err) {
+                    showError(err.message || 'Failed to set password');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
