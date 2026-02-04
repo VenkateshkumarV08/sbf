@@ -98,7 +98,7 @@
 	}
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-500 to-teal-600 p-4">
+<div class="min-h-screen flex items-center justify-center bg-linear-to-br from-cyan-500 to-teal-600 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header class="text-center space-y-4">
 			<img
@@ -107,7 +107,7 @@
 				class="h-16 w-auto mx-auto"
 			/>
 			<div>
-				<Card.Title class="text-2xl text-cyan-600">MCPP Digital Assistant</Card.Title>
+				<Card.Title class="text-2xl text-primary">MCPP Digital Assistant</Card.Title>
 				<Card.Description>Sign in to continue</Card.Description>
 			</div>
 		</Card.Header>
@@ -161,7 +161,7 @@
 						/>
 					</div>
 
-					<Button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600" disabled={loading}>
+					<Button type="submit" class="w-full bg-linear-to-r from-cyan-500 to-teal-600" disabled={loading}>
 						{loading ? 'Signing in...' : 'Sign In'}
 					</Button>
 				</form>
@@ -188,7 +188,7 @@
 					<Button
 						type="button"
 						onclick={handleSetNewPassword}
-						class="w-full bg-gradient-to-r from-cyan-500 to-teal-600"
+						class="w-full bg-linear-to-r from-cyan-500 to-teal-600"
 						disabled={loading}
 					>
 						{loading ? 'Setting Password...' : 'Set Password'}

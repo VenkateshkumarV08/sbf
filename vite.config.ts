@@ -5,6 +5,19 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	define: {
-		global: 'globalThis'
+		global: 'globalThis',
+		'process.env': {}
+	},
+	resolve: {
+		alias: {
+			buffer: 'buffer/'
+		}
+	},
+	optimizeDeps: {
+		esbuildOptions: {
+			define: {
+				global: 'globalThis'
+			}
+		}
 	}
 });

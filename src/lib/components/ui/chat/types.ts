@@ -11,6 +11,7 @@ export type ChatListProps = ChatListPropsWithoutHTML &
 export type ChatBubblePropsWithoutHTML = WithChildren<{
 	ref?: HTMLDivElement | null;
 	variant: 'sent' | 'received';
+	timestamp?: string;
 }>;
 
 export type ChatBubbleProps = ChatBubblePropsWithoutHTML &
