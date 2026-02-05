@@ -24,9 +24,21 @@
 	];
 
 	onMount(() => {
-		if (authStore.session) {
-			chatStore.initialize();
-		}
+		// Wait for auth to load before initializing chat
+		const initChat = async () => {
+			// Wait for auth store to finish loading
+			let attempts = 0;
+			while (authStore.loading && attempts < 50) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+				attempts++;
+			}
+
+			if (authStore.session) {
+				chatStore.initialize();
+			}
+		};
+
+		initChat();
 	});
 
 	// Auto-scroll to bottom when messages change

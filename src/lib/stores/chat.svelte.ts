@@ -65,6 +65,7 @@ class ChatStore {
 	initialize() {
 		if (!authStore.session) {
 			this.error = 'Not authenticated';
+			console.error('Chat initialization failed: No auth session');
 			return;
 		}
 
@@ -72,6 +73,7 @@ class ChatStore {
 			initializeLexClient(authStore.session);
 			this.isInitialized = true;
 			this.error = null;
+			console.log('Chat initialized successfully');
 
 			// Add welcome message only if no messages exist
 			if (this.messages.length === 0) {
