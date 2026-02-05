@@ -160,13 +160,13 @@
 						<Chat.BubbleMessage
 							class="{message.isUser
 								? 'chat-bubble-user'
-								: 'chat-bubble-bot '} overflow-x-auto"
+								: 'chat-bubble-bot markdown-content'} overflow-x-auto"
 						>
 							{#if message.isUser}
 								{message.content}
 							{:else}
-								<SvelteMarkdown
-									source={preprocessMarkdown(message.content)}
+								<SvelteMarkdown 
+									source={message.content}
 								/>
 							{/if}
 						</Chat.BubbleMessage>
