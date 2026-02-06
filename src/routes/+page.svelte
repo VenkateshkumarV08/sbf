@@ -42,10 +42,10 @@
 	});
 
 	// Auto-scroll to bottom when messages change
-	$effect(() => {
-		chatStore.messages.length; // Track messages
-		autoScroll.scrollToBottom(false); // Force scroll regardless of user position
-	});
+	// $effect(() => {
+	// 	chatStore.messages.length; // Track messages
+	// 	autoScroll.scrollToBottom(false); // Force scroll regardless of user position
+	// });
 
 	async function handleSendMessage() {
 		if (!messageInput.trim() || isSending) return;

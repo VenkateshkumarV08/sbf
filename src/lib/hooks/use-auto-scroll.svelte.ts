@@ -56,7 +56,7 @@ export class UseAutoScroll {
 			if (!this.#ref) return;
 
 			if (this.#ref.scrollHeight !== this.lastScrollHeight) {
-				this.scrollToBottom(true);
+				this.scrollToLastChild();
 			}
 
 			this.lastScrollHeight = this.#ref.scrollHeight;
@@ -77,7 +77,8 @@ export class UseAutoScroll {
 	get isAtBottom() {
 		if (!this.#ref) return true;
 
-		return this.#scrollY + this.#ref.offsetHeight >= this.#ref.scrollHeight;
+		// Add 1px tolerance for rounding issues
+		return this.#scrollY + this.#ref.offsetHeight >= this.#ref.scrollHeight - 1;
 	}
 
 	/** Disables auto scrolling until the container is scrolled back to the bottom */
@@ -97,5 +98,16 @@ export class UseAutoScroll {
 		if (auto && this.#userHasScrolled) return;
 
 		this.#ref.scrollTo(0, this.#ref.scrollHeight);
+	}
+
+	scrollToLastChild() {
+		if (!this.#ref) return;
+		// Great-grandchild
+		const lastGreatGrandchild = this.#ref.lastElementChild?.lastElementChild?.lastElementChild;
+		if (lastGreatGrandchild) {
+			lastGreatGrandchild.scrollIntoView({ behavior: "smooth" });
+		} else {
+			this.scrollToBottom();
+		}
 	}
 }
