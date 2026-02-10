@@ -6,10 +6,11 @@
 	import { authStore } from "$lib/stores/auth.svelte";
 	import { chatStore } from "$lib/stores/chat.svelte";
 	import * as Chat from "$lib/components/ui/chat";
-	import { SendHorizontal } from "@lucide/svelte";
+	import { SendHorizontal, RotateCcw, LogOut } from "@lucide/svelte";
 	import favicon from "$lib/assets/favicon.svg";
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 	import { UseAutoScroll } from "$lib/hooks/use-auto-scroll.svelte";
+	import MarkdownLink from "$lib/components/MarkdownLink.svelte";
 
 	const userEmail = $derived(authStore.session ? getUserEmail() : null);
 	let messageInput = $state("");
@@ -73,6 +74,15 @@
 		handleSendMessage();
 	}
 
+	function handleResetChat() {
+		if (confirm("Are you sure you want to reset the chat? This will clear all messages.")) {
+			chatStore.reset();
+			if (authStore.session) {
+				chatStore.initialize();
+			}
+		}
+	}
+
 	function preprocessMarkdown(content: string): string {
 		return content
 			.replace(/\\n/g, "\n") // Convert escaped newlines to actual newlines
@@ -101,18 +111,18 @@
 </script>
 
 <div class="flex flex-col h-screen">
-	<nav class="w-full p-4 bg-white border-b-5 border-primary shrink-0">
-		<div class="flex items-center gap-5">
+	<nav class="w-full p-2 sm:p-4 bg-white border-b-5 border-primary shrink-0">
+		<div class="flex items-center gap-2 sm:gap-5">
 			<img
 				src={favicon}
 				alt="SBF Logo"
-				class="h-10 w-auto drop-shadow-md hover:scale-105 transition-transform"
+				class="h-8 sm:h-10 w-auto drop-shadow-md hover:scale-105 transition-transform"
 			/>
-			<div class="flex-1">
-				<h6 class="text-lg font-bold text-primary tracking-tight">
+			<div class="flex-1 min-w-0">
+				<h6 class="text-sm sm:text-lg font-bold text-primary tracking-tight truncate">
 					MCPP Digital Assistant
 				</h6>
-				<p class="text-sm text-muted-foreground mt-0.5">
+				<p class="text-xs sm:text-sm text-muted-foreground mt-0.5 hidden sm:block">
 					Ask me about Mid-Career Pathways Programme (MCPP)
 				</p>
 				<!-- <div
@@ -125,25 +135,39 @@
 				</div> -->
 			</div>
 			{#if userEmail}
-				<Button
-					onclick={signOutAndRedirect}
-					variant="outline"
-					size="sm"
-				>
-					Sign Out
-				</Button>
+				<div class="flex gap-1 sm:gap-2">
+					<Button
+						onclick={handleResetChat}
+						variant="outline"
+						size="sm"
+						title="Reset chat"
+						class="px-2 sm:px-3"
+					>
+						<RotateCcw class="w-3 h-3 sm:w-4 sm:h-4" />
+						<span class="hidden sm:inline ml-1">Reset</span>
+					</Button>
+					<Button
+						onclick={signOutAndRedirect}
+						variant="outline"
+						size="sm"
+						class="px-2 sm:px-3"
+					>
+						<LogOut class="w-3 h-3 sm:w-4 sm:h-4" />
+						<span class="hidden sm:inline ml-1">Sign Out</span>
+					</Button>
+				</div>
 			{/if}
 		</div>
 	</nav>
 	<main
-		class="flex-1 max-w-225 mx-auto flex flex-col overflow-hidden bg-(--chat-bg-gradient-light)"
+		class="flex-1 w-full md:max-w-4xl xl:max-w-7xl mx-auto flex flex-col overflow-hidden bg-gray-50"
 	>
 		<!-- Scrollable Chat List -->
 		<div
-			class="flex-1 overflow-y-auto p-6 relative"
+			class="flex-1 overflow-y-auto p-2 sm:p-6 relative"
 			bind:this={autoScroll.ref}
 		>
-			<Chat.List class="h-full px-6 pb-4">
+			<Chat.List class="h-full px-2 sm:px-6 pb-4">
 				{#each chatStore.messages as message (message.id)}
 					<!-- {@const sender = users.find((u) => u.id === message.senderId)} -->
 					<Chat.Bubble
@@ -179,6 +203,7 @@
 							{:else}
 								<SvelteMarkdown 
 									source={message.content}
+									renderers={{ link: MarkdownLink }}
 								/>
 							{/if}
 						</Chat.BubbleMessage>
@@ -220,7 +245,7 @@
 								<div class="flex flex-col gap-3 py-2">
 									{#each ["Routing to the relevant department", "Finding the relevant information", "Getting the contact details", "Checking for any available links", "Formatting the response"] as step, index}
 										<div class="flex items-center gap-3">
-											{#if index < chatStore.loadingStep}
+											{#if chatStore.allStepsCompleted || index < chatStore.loadingStep}
 												<!-- Completed -->
 												<div
 													class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0"
@@ -240,7 +265,7 @@
 													</svg>
 												</div>
 												<span
-													class="text-sm text-muted-foreground"
+													class="text-sm {chatStore.allStepsCompleted ? 'text-green-600 font-medium' : 'text-muted-foreground'}"
 													>{step}</span
 												>
 											{:else if index === chatStore.loadingStep}
@@ -279,12 +304,12 @@
 		<!-- Fixed Quick Actions -->
 		{#if chatStore.messages.length === 1}
 			<div
-				class="px-6 py-4 flex flex-wrap gap-2 bg-linear-to-b from-(--chat-bg-gradient-dark) to-white"
+				class="px-2 sm:px-6 py-3 sm:py-4 flex flex-wrap gap-2 bg-linear-to-b from-(--chat-bg-gradient-dark) to-white"
 			>
 				{#each quickActions as action}
 					<button
 						onclick={() => sendQuickAction(action.text)}
-						class="px-4 py-2 bg-white border-2 border-(--chat-border-light) rounded-full text-sm font-medium text-(--chat-text-gray) cursor-pointer transition-all duration-200 hover:bg-(--chat-brand-primary) hover:text-white hover:border-(--chat-brand-primary) hover:-translate-y-0.5 hover:shadow-lg"
+						class="px-3 sm:px-4 py-1.5 sm:py-2 bg-white border-2 border-(--chat-border-light) rounded-full text-xs sm:text-sm font-medium text-(--chat-text-gray) cursor-pointer transition-all duration-200 hover:bg-(--chat-brand-primary) hover:text-white hover:border-(--chat-brand-primary) hover:-translate-y-0.5 hover:shadow-lg"
 					>
 						{action.icon}
 						{action.text}
@@ -295,9 +320,9 @@
 
 		<!-- Fixed Input -->
 		<div
-			class="px-6 py-5 bg-white border rounded-2xl mb-4 border-(--chat-border-light)"
+			class="px-2 sm:px-6 py-3 sm:py-5 bg-white border rounded-2xl mb-2 sm:mb-4 border-(--chat-border-light)"
 		>
-			<div class="flex gap-3">
+			<div class="flex gap-2 sm:gap-3">
 				<Input
 					type="text"
 					placeholder={chatStore.isInitialized
@@ -306,17 +331,17 @@
 					disabled={!chatStore.isInitialized || isSending}
 					bind:value={messageInput}
 					onkeypress={handleKeyPress}
-					class="chat-input"
+					class="chat-input text-sm sm:text-base"
 				/>
 				<Button
 					onclick={handleSendMessage}
 					disabled={!chatStore.isInitialized ||
 						isSending ||
 						!messageInput.trim()}
-					class="chat-send-btn"
+					class="chat-send-btn px-3 sm:px-4"
 				>
-					<SendHorizontal />
-					Send
+					<SendHorizontal class="w-4 h-4 sm:w-5 sm:h-5" />
+					<span class="hidden sm:inline ml-1">Send</span>
 				</Button>
 			</div>
 		</div>
