@@ -14,7 +14,7 @@
 		{@render children?.()}
 	</div>
 	{#if timestamp}
-		<p class="text-xs text-muted-foreground px-2 text-right data-[variant='sent']:text-left" data-variant={variant}>
+		<p class="text-xs text-muted-foreground px-2 data-[variant='received']:pl-12" data-variant={variant}>
 			{timestamp}
 		</p>
 	{/if}
