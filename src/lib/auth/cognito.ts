@@ -111,10 +111,15 @@ export async function getCurrentSession(): Promise<CognitoUserSession | null> {
 			if (err || !session) {
 				resolve(null);
 			} else {
+				// Session is automatically refreshed if needed by getSession
 				resolve(session);
 			}
 		});
 	});
+}
+
+export async function refreshSession(): Promise<CognitoUserSession | null> {
+	return getCurrentSession();
 }
 
 export function signOut() {
