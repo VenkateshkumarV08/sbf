@@ -105,7 +105,28 @@ export class UseAutoScroll {
 		// Great-grandchild
 		const lastGreatGrandchild = this.#ref.lastElementChild?.lastElementChild?.lastElementChild;
 		if (lastGreatGrandchild) {
+			const childHeight = lastGreatGrandchild.scrollHeight || lastGreatGrandchild.clientHeight;
+			const containerHeight = this.#ref.offsetHeight;
+			
 			lastGreatGrandchild.scrollIntoView({ behavior: "smooth" });
+			
+			// Only adjust scroll if the child is taller than the container
+			if (childHeight + 80 > containerHeight) {
+				// Scroll up a bit to show more of the top content
+				setTimeout(() => {
+					if (this.#ref) {
+						const minScroll = 0;
+						const targetScroll = this.#ref.scrollTop - 30;
+						
+						// Don't scroll past the top
+						if (targetScroll >= minScroll) {
+							this.#ref.scrollTop = targetScroll;
+						} else {
+							this.#ref.scrollTop = minScroll;
+						}
+					}
+				}, 100);
+			}
 		} else {
 			this.scrollToBottom();
 		}
