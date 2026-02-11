@@ -114,11 +114,11 @@ class ChatStore {
 			clearTimeout(this.detailedLoaderTimeout);
 		}
 
-		// Show detailed loader after 2 seconds
+		// Show detailed loader after 1 second
 		this.detailedLoaderTimeout = window.setTimeout(() => {
 			this.showDetailedLoader = true;
 			this.scheduleNextStep();
-		}, 2000);
+		}, 1000);
 	}
 
 	private async stopLoadingAnimation() {

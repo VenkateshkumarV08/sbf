@@ -11,7 +11,7 @@
 	let { card, onButtonClick }: Props = $props();
 </script>
 
-<Card class="w-md overflow-hidden">
+<Card class="w-full overflow-hidden">
 	{#if card.imageUrl}
 		<div class="w-full h-48 overflow-hidden">
 			<img 
@@ -22,7 +22,7 @@
 		</div>
 	{/if}
 	
-	<CardHeader>
+	<CardHeader class="@container-normal">
 		<CardTitle class="text-lg">{card.title}</CardTitle>
 		{#if card.subtitle}
 			<CardDescription class=" pt-3 mt-1">{card.subtitle}</CardDescription>
