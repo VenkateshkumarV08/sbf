@@ -11,6 +11,7 @@
 	import SvelteMarkdown from "@humanspeak/svelte-markdown";
 	import { UseAutoScroll } from "$lib/hooks/use-auto-scroll.svelte";
 	import MarkdownLink from "$lib/components/MarkdownLink.svelte";
+	import LexResponseCard from "$lib/components/LexResponseCard.svelte";
 
 	const userEmail = $derived(authStore.session ? getUserEmail() : null);
 	let messageInput = $state("");
@@ -71,6 +72,12 @@
 
 	function sendQuickAction(text: string) {
 		messageInput = text;
+		handleSendMessage();
+	}
+
+	function handleCardButtonClick(value: string, text: string) {
+		// When a card button is clicked, send its value as a message
+		messageInput = value;
 		handleSendMessage();
 	}
 
@@ -200,6 +207,21 @@
 						>
 							{#if message.isUser}
 								{message.content}
+							{:else if message.card}
+								<!-- Render Lex Response Card -->
+								<LexResponseCard 
+									card={message.card} 
+									onButtonClick={handleCardButtonClick}
+								/>
+								<!-- Also show content if there's additional text beyond the card -->
+								{#if message.content && message.content !== message.card.title}
+									<div class="mt-3">
+										<SvelteMarkdown 
+											source={message.content}
+											renderers={{ link: MarkdownLink }}
+										/>
+									</div>
+								{/if}
 							{:else}
 								<SvelteMarkdown 
 									source={message.content}

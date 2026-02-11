@@ -11,9 +11,22 @@ import {
 } from '$env/static/public';
 import type { CognitoUserSession } from 'amazon-cognito-identity-js';
 
+export interface ImageResponseCardButton {
+	text: string;
+	value: string;
+}
+
+export interface ImageResponseCard {
+	title: string;
+	subtitle?: string;
+	imageUrl?: string;
+	buttons?: ImageResponseCardButton[];
+}
+
 export interface LexMessage {
 	content?: string;
 	contentType?: string;
+	imageResponseCard?: ImageResponseCard;
 }
 
 export interface LexResponse {

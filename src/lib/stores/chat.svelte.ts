@@ -1,4 +1,4 @@
-import { initializeLexClient, sendMessageToLex, generateSessionId } from '$lib/services/lex';
+import { initializeLexClient, sendMessageToLex, generateSessionId, type ImageResponseCard } from '$lib/services/lex';
 import { authStore } from './auth.svelte';
 import { refreshSession } from '$lib/auth/cognito';
 
@@ -7,6 +7,7 @@ export interface ChatMessage {
 	content: string;
 	isUser: boolean;
 	timestamp: Date;
+	card?: ImageResponseCard;
 }
 
 interface PersistedChatData {
@@ -117,7 +118,7 @@ class ChatStore {
 		this.detailedLoaderTimeout = window.setTimeout(() => {
 			this.showDetailedLoader = true;
 			this.scheduleNextStep();
-		}, 4000);
+		}, 2000);
 	}
 
 	private async stopLoadingAnimation() {
@@ -147,12 +148,13 @@ class ChatStore {
 	}
 
 
-	addMessage(content: string, isUser: boolean) {
+	addMessage(content: string, isUser: boolean, card?: ImageResponseCard) {
 		const message: ChatMessage = {
 			id: `${Date.now()}-${Math.random()}`,
 			content,
 			isUser,
-			timestamp: new Date()
+			timestamp: new Date(),
+			...(card && { card })
 		};
 		this.messages.push(message);
 		this.saveToStorage();
@@ -182,10 +184,20 @@ class ChatStore {
 
 			// Add bot messages
 			if (response.messages && response.messages.length > 0) {
-				response.messages.forEach((msg) => {
-					if (msg.content) {
+				// Check if there's a card in the response
+				const hasCard = response.messages.some(msg => msg.imageResponseCard);
+				
+				response.messages.forEach((msg, index) => {
+					// Handle both content and imageResponseCard
+					if (msg.imageResponseCard) {
+						// If there's a card, add the content (if any) and the card
+						const content = msg.content || msg.imageResponseCard.title;
+						this.addMessage(content, false, msg.imageResponseCard);
+					} else if (msg.content && !hasCard) {
+						// Only add text message if there's no card in this response
 						this.addMessage(msg.content, false);
 					}
+					// If hasCard is true and this is just text, skip it (Option C)
 				});
 			} else {
 				this.addMessage('I received your message but have no response.', false);
@@ -218,10 +230,20 @@ class ChatStore {
 						
 						// Add bot messages
 						if (response.messages && response.messages.length > 0) {
+							// Check if there's a card in the response
+							const hasCard = response.messages.some(msg => msg.imageResponseCard);
+							
 							response.messages.forEach((msg) => {
-								if (msg.content) {
+								// Handle both content and imageResponseCard
+								if (msg.imageResponseCard) {
+									// If there's a card, add the content (if any) and the card
+									const content = msg.content || msg.imageResponseCard.title;
+									this.addMessage(content, false, msg.imageResponseCard);
+								} else if (msg.content && !hasCard) {
+									// Only add text message if there's no card in this response
 									this.addMessage(msg.content, false);
 								}
+								// If hasCard is true and this is just text, skip it (Option C)
 							});
 						} else {
 							this.addMessage('I received your message but have no response.', false);
